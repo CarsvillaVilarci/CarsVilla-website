@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   CarsVilla design system — refined luxury automotive
+   Near-black canvas · crimson-red signature · sky + yellow accents
+--------------------------------------------------------------------------- */
+@theme {
+  /* Core surfaces */
+  --color-ink: #0a0a0c;
+  --color-ink-2: #101014;
+  --color-surface: #16161c;
+  --color-surface-2: #1d1d25;
+  --color-line: #2a2a33;
+
+  /* Text */
+  --color-paper: #f6f5f3;
+  --color-muted: #a1a1ad;
+
+  /* Brand */
+  --color-brand: #e11d2a;      /* signature red */
+  --color-brand-hot: #ff2f3e;  /* hover / glow red */
+  --color-brand-deep: #9c0f1a;
+  --color-sky: #7dd3fc;        /* halka sky */
+  --color-gold: #fbbf24;       /* yellow accent */
+
+  /* Type */
+  --font-display: var(--font-bricolage), "Arial Black", sans-serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Radius */
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    /* Smooth scrolling is handled by Lenis (JS) — no CSS scroll-behavior needed. */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-brand);
+    color: #fff;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 0.98;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 999px;
+    border: 2px solid var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
+}
+
+/* ------------------------------- Utilities ------------------------------- */
+@layer utilities {
+  /* Fine film grain overlay for premium depth */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .text-balance { text-wrap: balance; }
+
+  .container-x { padding-inline: clamp(1.25rem, 5vw, 5rem); }
+
+  /* Radial glow used behind hero + section highlights */
+  .glow-brand {
+    background: radial-gradient(60% 60% at 50% 0%, rgba(225, 29, 42, 0.22), transparent 70%);
+  }
+
+  .ring-hairline {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .gradient-outline {
+    background:
+      linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+      linear-gradient(135deg, rgba(225,29,42,0.6), rgba(125,211,252,0.35), rgba(251,191,36,0.4)) border-box;
+    border: 1px solid transparent;
+  }
+
+  /* Staggered page-load reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: reveal 0.9s var(--ease-out-expo) forwards;
+  }
+  @keyframes reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .marquee-track {
+    animation: marquee 32s linear infinite;
+    width: max-content;
+  }
+  @keyframes marquee {
+    to { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .marquee-track { animation: none; opacity: 1; transform: none; }
+  }
+}
