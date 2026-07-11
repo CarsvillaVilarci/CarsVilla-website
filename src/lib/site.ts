@@ -1,33 +1,29 @@
-/** Central site configuration — single source of truth for brand + SEO. */
+/**
+ * Central site configuration. Swap placeholder values (media URLs, contact
+ * details) for real ones as they arrive — nothing else needs to change.
+ */
 export const site = {
   name: "CarsVilla",
-  legalName: "CarsVilla Motors",
-  tagline: "Sell smart. Buy certified. Drive premium.",
-  description:
-    "CarsVilla is India's premium used-car marketplace. Sell your car in minutes at the best price, buy 200-point certified pre-owned cars, and get RC transfer, insurance & financing — all in one place.",
-  url: "https://carsvilla.example.com", // TODO: replace with production domain
-  locale: "en_IN",
+  tagline: "India's boutique for pre-owned cars",
+  locale: "en-IN",
   phone: "+91 90000 00000",
-  email: "hello@carsvilla.example.com",
-  address: {
-    street: "MG Road",
-    city: "Bengaluru",
-    region: "Karnataka",
-    postalCode: "560001",
-    country: "IN",
-  },
-  social: {
-    instagram: "https://instagram.com/carsvilla",
-    youtube: "https://youtube.com/@carsvilla",
-    twitter: "https://twitter.com/carsvilla",
-    facebook: "https://facebook.com/carsvilla",
-  },
+  email: "hello@carsvilla.in",
+  studio: "Vilarci",
 } as const;
 
-export const nav = [
-  { label: "Buy Cars", href: "/buy" },
-  { label: "Sell Car", href: "/sell" },
-  { label: "Services", href: "/services" },
-  { label: "RC Check", href: "/lookup" },
-  { label: "About", href: "/about" },
+/**
+ * Media lives on Cloudflare R2 (zero-egress). Drop the public R2 URLs in here.
+ * While empty, the hero shows a refined poster fallback (no broken <video>).
+ */
+export const media = {
+  heroVideo: "", // e.g. "https://cdn.carsvilla.in/hero-loop.mp4"
+  heroVideoWebm: "", // optional smaller VP9 source
+  heroPoster: "", // e.g. "https://cdn.carsvilla.in/hero-poster.jpg"
+} as const;
+
+export const primaryNav = [
+  { label: "Buy Car", href: "/buy" },
+  { label: "Sell your car", href: "/sell" },
+  { label: "Contact us", href: "/contact" },
+  { label: "About us", href: "/about" },
 ] as const;

@@ -1,20 +1,32 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
-  ArrowLeft, BadgeCheck, Calendar, Fuel, Gauge, MapPin, Settings2,
-  Users, Palette, Car as CarIcon, ShieldCheck, Check,
+  CalendarCheck,
+  ChevronRight,
+  Fuel,
+  Gauge,
+  MapPin,
+  Phone,
+  Send,
+  Settings2,
+  ShieldCheck,
+  Check,
 } from "lucide-react";
-import { cars, getCar } from "@/lib/cars";
-import { formatINR, formatINRFull } from "@/lib/utils";
-import { carJsonLd, breadcrumbJsonLd } from "@/lib/seo";
-import { CarThumb } from "@/components/CarThumb";
-import { CarCard } from "@/components/CarCard";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { Button } from "@/components/ui/Button";
+import {
+  allCars,
+  getCar,
+  similarCars,
+  carSpecs,
+  estimateEmi,
+  formatINR,
+  kmFormat,
+} from "@/lib/demo";
+import { site } from "@/lib/site";
+import { CarCard } from "@/components/ui/CarCard";
 
 export function generateStaticParams() {
-  return cars.map((c) => ({ slug: c.slug }));
+  return allCars.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -27,13 +39,21 @@ export async function generateMetadata({
   if (!car) return { title: "Car not found" };
   const title = `${car.year} ${car.make} ${car.model} ${car.variant}`;
   return {
-    title: `${title} — ${formatINR(car.price)}`,
-    description: `Buy a certified ${title} in ${car.city}. ${(car.km / 1000).toFixed(1)}k km, ${car.fuel}, ${car.transmission}, ${car.owners} owner. 200-point inspected with warranty.`,
-    alternates: { canonical: `/buy/${car.slug}` },
+    title,
+    description: `Buy a ${title} in ${car.city} — ${formatINR(car.price)}, ${kmFormat(car.km)}, ${car.fuel}, ${car.transmission}. CarsVilla 200-point certified with a 5-day money-back promise.`,
   };
 }
 
-export default async function CarPage({
+const inspection = [
+  "Engine & transmission",
+  "Suspension & brakes",
+  "Electricals & AC",
+  "Exterior & tyres",
+  "Interior & upholstery",
+  "Documents & RC",
+];
+
+export default async function CarDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -42,135 +62,192 @@ export default async function CarPage({
   const car = getCar(slug);
   if (!car) notFound();
 
-  const specs = [
-    { Icon: Calendar, label: "Year", value: car.year },
-    { Icon: Gauge, label: "KM driven", value: `${car.km.toLocaleString("en-IN")} km` },
-    { Icon: Fuel, label: "Fuel", value: car.fuel },
-    { Icon: Settings2, label: "Transmission", value: car.transmission },
-    { Icon: Users, label: "Ownership", value: `${car.owners} owner` },
-    { Icon: Palette, label: "Colour", value: car.color },
-    { Icon: CarIcon, label: "Body type", value: car.bodyType },
-    { Icon: MapPin, label: "Location", value: car.city },
-  ];
+  const specs = carSpecs(car);
+  const emi = estimateEmi(car.price);
+  const similar = similarCars(car);
 
-  const checklist = [
-    "Engine & transmission verified", "No accident / flood history",
-    "Odometer authenticity checked", "Full service records available",
-    "RC & insurance validated", "Tyres & brakes inspected",
-  ];
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Car",
+    name: `${car.make} ${car.model} ${car.variant}`,
+    brand: { "@type": "Brand", name: car.make },
+    model: car.model,
+    vehicleModelDate: String(car.year),
+    fuelType: car.fuel,
+    vehicleTransmission: car.transmission,
+    mileageFromOdometer: { "@type": "QuantitativeValue", value: car.km, unitCode: "KMT" },
+    offers: {
+      "@type": "Offer",
+      price: car.price,
+      priceCurrency: "INR",
+      availability: "https://schema.org/InStock",
+      seller: { "@type": "AutoDealer", name: site.name },
+    },
+  };
 
-  const similar = cars.filter((c) => c.id !== car.id && c.bodyType === car.bodyType).slice(0, 3);
-  const related = similar.length ? similar : cars.filter((c) => c.id !== car.id).slice(0, 3);
+  const chips = [
+    { icon: Gauge, label: kmFormat(car.km) },
+    { icon: Fuel, label: car.fuel },
+    { icon: Settings2, label: car.transmission },
+    { icon: MapPin, label: car.city },
+  ];
 
   return (
-    <>
-      <JsonLd data={carJsonLd(car)} />
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Home", url: "/" },
-          { name: "Buy Cars", url: "/buy" },
-          { name: `${car.make} ${car.model}`, url: `/buy/${car.slug}` },
-        ])}
-      />
+    <div className="container-x py-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <div className="container-x mx-auto max-w-7xl pt-28 md:pt-32">
-        <Link
-          href="/buy"
-          className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-paper"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to all cars
-        </Link>
+      {/* Breadcrumb */}
+      <nav className="mb-6 flex items-center gap-1.5 text-sm text-muted">
+        <Link href="/" className="hover:text-wine">Home</Link>
+        <ChevronRight size={14} />
+        <Link href="/buy" className="hover:text-wine">Buy</Link>
+        <ChevronRight size={14} />
+        <span className="text-ink">{car.model}</span>
+      </nav>
 
-        <div className="mt-6 grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-          {/* Left: visual + specs */}
-          <div>
-            <CarThumb car={car} className="aspect-[16/10]" rounded="rounded-[2rem]" />
-
-            <div className="mt-4 grid grid-cols-4 gap-3">
-              {[0, 1, 2, 3].map((i) => (
-                <CarThumb key={i} car={car} className="aspect-[4/3] opacity-70" rounded="rounded-xl" />
-              ))}
-            </div>
-
-            <div className="mt-10">
-              <h2 className="font-display text-2xl text-paper">Car overview</h2>
-              <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-4">
-                {specs.map((s) => (
-                  <div key={s.label} className="bg-ink p-5">
-                    <s.Icon className="h-5 w-5 text-brand" />
-                    <p className="mt-3 text-xs uppercase tracking-wider text-muted">{s.label}</p>
-                    <p className="mt-1 font-semibold text-paper">{s.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-10 rounded-3xl border border-line bg-surface/50 p-8">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="h-6 w-6 text-sky" />
-                <h2 className="font-display text-2xl text-paper">200-point certified</h2>
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {checklist.map((c) => (
-                  <div key={c} className="flex items-center gap-3 text-paper/85">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/15 text-brand">
-                      <Check className="h-3.5 w-3.5" />
-                    </span>
-                    {c}
-                  </div>
-                ))}
-              </div>
-            </div>
+      <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
+        {/* Gallery */}
+        <div>
+          <div
+            className="relative aspect-[16/10] overflow-hidden rounded-[var(--radius-2xl)] border border-line shadow-luxe"
+            style={{ background: `radial-gradient(120% 120% at 30% 0%, ${car.tint}, #14100f)` }}
+          >
+            <span className="absolute left-5 top-5 rounded-full bg-black/25 px-3 py-1 text-xs font-medium text-cream backdrop-blur">
+              {car.year}
+            </span>
+            <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full bg-cream/95 px-3 py-1 text-xs font-semibold text-wine">
+              <ShieldCheck size={13} /> Certified
+            </span>
+            <span className="absolute bottom-5 left-5 font-display text-4xl text-cream/95">{car.make}</span>
           </div>
-
-          {/* Right: price card */}
-          <div className="lg:sticky lg:top-24 lg:h-fit">
-            <div className="rounded-[2rem] border border-line bg-surface p-8">
-              {car.certified && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-sky/15 px-3 py-1 text-sm font-semibold text-sky">
-                  <BadgeCheck className="h-4 w-4" /> Certified
-                </span>
-              )}
-              <p className="mt-4 text-sm uppercase tracking-[0.18em] text-muted">{car.make}</p>
-              <h1 className="mt-1 font-display text-3xl leading-tight text-paper">
-                {car.model} <span className="text-muted">{car.year}</span>
-              </h1>
-              <p className="mt-1 text-muted">{car.variant}</p>
-
-              <div className="mt-6 border-t border-line pt-6">
-                <p className="font-display text-4xl text-paper">{formatINRFull(car.price)}</p>
-                <p className="mt-1 text-sm text-muted">
-                  or EMI from{" "}
-                  <span className="font-semibold text-paper">
-                    ₹{car.emi.toLocaleString("en-IN")}/mo
-                  </span>
-                </p>
-              </div>
-
-              <div className="mt-6 flex flex-col gap-3">
-                <Button href="/contact" size="lg">Book a test drive</Button>
-                <Button href="/lookup" variant="outline" size="lg">
-                  Check RC & history
-                </Button>
-              </div>
-
-              <p className="mt-5 text-center text-xs text-muted">
-                Free doorstep test drive · 7-day money-back · Up to 1-yr warranty
-              </p>
-            </div>
+          {/* thumbnail strip (branded, no external photos) */}
+          <div className="mt-3 grid grid-cols-4 gap-3">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="aspect-[4/3] rounded-xl border border-line"
+                style={{ background: `radial-gradient(120% 120% at ${20 + i * 20}% 0%, ${car.tint}, #14100f)` }}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Related */}
-        <section className="mt-24">
-          <h2 className="font-display text-3xl text-paper">Similar cars you may like</h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((c) => (
-              <CarCard key={c.id} car={c} />
+        {/* Summary + CTA (sticky on desktop) */}
+        <aside className="lg:sticky lg:top-28 lg:self-start">
+          <div className="rounded-[var(--radius-2xl)] border border-line bg-paper p-6 shadow-soft md:p-7">
+            <h1 className="font-display text-[1.9rem] leading-tight text-ink">
+              {car.model} <span className="text-muted">{car.variant}</span>
+            </h1>
+            <p className="mt-1 text-sm text-muted">
+              {car.year} · {car.make} · {car.city}
+            </p>
+
+            <div className="mt-5 border-y border-line py-4">
+              <p className="font-display text-3xl text-wine">{formatINR(car.price)}</p>
+              <p className="mt-1 text-sm text-muted">
+                or from <span className="font-semibold text-ink">{formatINR(emi)}/mo</span> · EMI (60 mo)
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {chips.map((c) => (
+                <span key={c.label} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs text-ink">
+                  <c.icon size={13} className="text-wine" /> {c.label}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-6 space-y-2.5">
+              <Link
+                href={`/contact?car=${car.slug}`}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-wine px-6 py-3.5 text-sm font-semibold text-cream transition-colors hover:bg-wine-hot"
+              >
+                <CalendarCheck size={16} /> Book a test drive
+              </Link>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Link
+                  href={`/contact?car=${car.slug}`}
+                  className="flex items-center justify-center gap-2 rounded-full border border-line px-4 py-3 text-sm font-semibold text-ink hover:border-wine/40"
+                >
+                  <Send size={15} /> Enquire
+                </Link>
+                <a
+                  href={`tel:${site.phone.replace(/\s/g, "")}`}
+                  className="flex items-center justify-center gap-2 rounded-full border border-line px-4 py-3 text-sm font-semibold text-ink hover:border-wine/40"
+                >
+                  <Phone size={15} /> Call
+                </a>
+              </div>
+            </div>
+
+            <ul className="mt-6 grid gap-2 text-sm text-muted">
+              {["200-point certified", "5-day money-back promise", "Free RC transfer"].map((a) => (
+                <li key={a} className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-600" /> {a}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      {/* Overview */}
+      <section className="mt-12 max-w-3xl">
+        <h2 className="text-2xl">Overview</h2>
+        <p className="mt-3 leading-relaxed text-muted">
+          This {car.year} {car.make} {car.model} {car.variant} has covered {kmFormat(car.km)} and runs
+          on {car.fuel.toLowerCase()} with a {car.transmission.toLowerCase()} gearbox. Sold and certified
+          by {site.name} in {car.city} — inspected across 200 checkpoints, and backed by a 5-day
+          money-back promise with free RC transfer handled at your doorstep.
+        </p>
+      </section>
+
+      {/* Specifications */}
+      <section className="mt-12">
+        <h2 className="text-2xl">Specifications</h2>
+        <dl className="mt-5 grid gap-x-10 rounded-[var(--radius-xl)] border border-line bg-paper p-6 sm:grid-cols-2 md:p-8">
+          {specs.map((s) => (
+            <div key={s.label} className="flex items-center justify-between gap-4 border-b border-line py-3 last:border-0 sm:[&:nth-last-child(2)]:border-0">
+              <dt className="text-sm text-muted">{s.label}</dt>
+              <dd className="text-right text-sm font-medium text-ink">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* Inspection */}
+      <section className="mt-12">
+        <h2 className="text-2xl">200-point inspection</h2>
+        <p className="mt-2 text-sm text-muted">Every area checked and cleared by a CarsVilla certified inspector.</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {inspection.map((area) => (
+            <div key={area} className="flex items-center gap-3 rounded-xl border border-line bg-paper px-4 py-3.5">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-50 text-emerald-700">
+                <Check size={16} />
+              </span>
+              <span className="text-sm font-medium text-ink">{area}</span>
+              <span className="ml-auto text-xs font-semibold text-emerald-700">Passed</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Similar cars */}
+      {similar.length > 0 && (
+        <section className="mt-14">
+          <div className="mb-6 flex items-end justify-between">
+            <h2 className="text-2xl">Similar cars</h2>
+            <Link href="/buy" className="text-sm font-semibold text-wine hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {similar.map((c) => (
+              <CarCard key={c.slug} car={c} />
             ))}
           </div>
         </section>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

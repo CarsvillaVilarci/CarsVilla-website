@@ -1,159 +1,90 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-
-// 3D scene is loaded ONLY on desktop, and never ships to mobile bundles.
-const HeroScene = dynamic(() => import("./HeroScene"), { ssr: false });
-
-const ease = [0.16, 1, 0.3, 1] as const;
+import Link from "next/link";
+import { ArrowUpRight, Play } from "lucide-react";
+import { media } from "@/lib/site";
+import { Reveal } from "@/components/ui/Reveal";
 
 export function Hero() {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsDesktop(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
+  const hasVideo = Boolean(media.heroVideo);
 
   return (
-    <section className="relative min-h-[100svh] overflow-hidden pt-16 md:pt-20">
-      {/* atmosphere */}
-      <div className="glow-brand absolute inset-x-0 top-0 h-[70vh]" />
-      <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 80% 20%, rgba(125,211,252,0.12), transparent 40%), radial-gradient(circle at 15% 70%, rgba(251,191,36,0.08), transparent 40%)",
-        }}
-      />
-
-      <div className="container-x mx-auto grid max-w-7xl items-center gap-8 pb-16 pt-10 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[1.05fr_0.95fr] lg:pt-0">
-        {/* Copy */}
-        <div className="relative z-10">
-          <motion.span
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease }}
-            className="inline-flex items-center gap-2 rounded-full border border-line bg-white/5 px-4 py-1.5 text-sm text-sky backdrop-blur"
-          >
-            <Sparkles className="h-4 w-4" /> India&apos;s premium pre-owned marketplace
-          </motion.span>
-
-          <h1 className="mt-6 font-display text-[clamp(2.8rem,7vw,5.6rem)] font-bold leading-[0.95] text-paper">
-            <motion.span
-              className="block"
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease, delay: 0.08 }}
-            >
-              Sell smart.
-            </motion.span>
-            <motion.span
-              className="block text-brand"
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease, delay: 0.16 }}
-            >
-              Buy certified.
-            </motion.span>
-            <motion.span
-              className="block"
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease, delay: 0.24 }}
-            >
-              Drive premium.
-            </motion.span>
+    <section className="glow-wine relative pt-10 pb-16">
+      <div className="container-x">
+        <Reveal className="mx-auto max-w-4xl text-center">
+          <p className="kicker">Boutique pre-owned cars · India</p>
+          <h1 className="mt-5 text-balance text-[clamp(2.6rem,5.2vw,5rem)]">
+            The refined way to <em className="not-italic text-gold">buy &amp; sell</em> your car.
           </h1>
+          <p className="mx-auto mt-5 max-w-xl text-balance text-[1.05rem] leading-relaxed text-muted">
+            Best price guaranteed, a 200-point inspection on every car, and
+            paperwork handled at your doorstep — the CarsVilla standard.
+          </p>
+        </Reveal>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.34 }}
-            className="mt-6 max-w-lg text-lg leading-relaxed text-muted text-balance"
-          >
-            Get the best price for your car in minutes, or drive home a 200-point
-            certified car with warranty. Doorstep pickup, instant payment, zero stress.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.42 }}
-            className="mt-9 flex flex-col gap-3 sm:flex-row"
-          >
-            <Button href="/sell" size="lg">
-              Sell your car <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button href="/buy" size="lg" variant="outline">
-              Browse cars
-            </Button>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-8"
-          >
-            {[
-              { n: "50k+", l: "Cars sold" },
-              { n: "200-pt", l: "Inspection" },
-              { n: "4.8★", l: "Rated by owners" },
-            ].map((s) => (
-              <div key={s.l}>
-                <p className="font-display text-2xl text-paper md:text-3xl">{s.n}</p>
-                <p className="mt-1 text-xs text-muted">{s.l}</p>
+        {/* 90%-width cinematic hero video */}
+        <Reveal delay={120} className="relative mx-auto mt-12 w-[90%]">
+          <div className="relative aspect-[21/9] overflow-hidden rounded-[var(--radius-2xl)] border border-line bg-wine shadow-luxe">
+            {hasVideo ? (
+              <video
+                className="h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={media.heroPoster || undefined}
+              >
+                <source src={media.heroVideo} type="video/mp4" />
+                {media.heroVideoWebm && (
+                  <source src={media.heroVideoWebm} type="video/webm" />
+                )}
+              </video>
+            ) : (
+              /* Refined placeholder shown until the R2 video URL is set */
+              <div className="hero-fallback h-full w-full" aria-hidden>
+                <span className="absolute inset-0 grid place-items-center">
+                  <span className="flex items-center gap-3 rounded-full border border-white/20 bg-black/20 px-5 py-2.5 text-sm font-medium text-cream/90 backdrop-blur">
+                    <Play size={15} className="fill-current" />
+                    Showreel — R2 video loads here
+                  </span>
+                </span>
               </div>
-            ))}
-          </motion.div>
-        </div>
+            )}
 
-        {/* Visual */}
-        <div className="relative h-[46vh] min-h-[320px] lg:h-full">
-          {isDesktop ? (
-            <HeroScene />
-          ) : (
-            <MobileHeroVisual />
-          )}
-          <div className="pointer-events-none absolute bottom-4 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full border border-line bg-ink/70 px-4 py-2 text-xs text-muted backdrop-blur md:flex">
-            <ShieldCheck className="h-4 w-4 text-sky" /> Every car, RC-verified &amp; certified
+            {/* legibility wash + caption overlay */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/55 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 p-6 md:p-9">
+              <p className="max-w-sm font-display text-[1.4rem] leading-tight text-cream">
+                Every car, inspected. Every deal, in your favour.
+              </p>
+              <div className="pointer-events-auto flex shrink-0 gap-3">
+                <Link
+                  href="/buy"
+                  className="inline-flex items-center gap-2 rounded-full bg-cream px-6 py-3 text-sm font-semibold text-wine transition-transform hover:-translate-y-0.5"
+                >
+                  Browse cars
+                  <ArrowUpRight size={16} />
+                </Link>
+                <Link
+                  href="/sell"
+                  className="inline-flex items-center gap-2 rounded-full border border-cream/40 px-6 py-3 text-sm font-semibold text-cream transition-colors hover:bg-cream/10"
+                >
+                  Sell your car
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* floating stat chips */}
+          <div className="absolute -left-3 top-8 hidden rotate-[-4deg] rounded-2xl border border-line bg-paper px-4 py-3 shadow-luxe lg:block">
+            <p className="font-display text-2xl text-wine">4,200+</p>
+            <p className="text-xs text-muted">cars re-homed</p>
+          </div>
+          <div className="absolute -right-3 bottom-16 hidden rotate-[4deg] rounded-2xl border border-line bg-paper px-4 py-3 shadow-luxe lg:block">
+            <p className="font-display text-2xl text-wine">60 min</p>
+            <p className="text-xs text-muted">sell &amp; get paid</p>
+          </div>
+        </Reveal>
       </div>
     </section>
-  );
-}
-
-/** Fast, lightweight premium hero for phones — pure CSS, no Three.js. */
-function MobileHeroVisual() {
-  return (
-    <div className="relative grid h-full place-items-center">
-      <div className="absolute h-64 w-64 rounded-full bg-brand/25 blur-[70px]" />
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
-        className="relative grid h-60 w-60 place-items-center rounded-full border border-line"
-        style={{ boxShadow: "inset 0 0 60px rgba(255,255,255,0.06)" }}
-      >
-        <div className="absolute inset-6 rounded-full border border-line" />
-        <div className="absolute inset-12 rounded-full border border-dashed border-line" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute h-24 w-3 rounded-full bg-gradient-to-b from-white/70 to-white/10"
-            style={{ transform: `rotate(${i * 72}deg) translateY(-30px)` }}
-          />
-        ))}
-        <div className="relative h-12 w-12 rounded-full bg-brand shadow-[0_0_30px_rgba(225,29,42,0.8)]" />
-      </motion.div>
-    </div>
   );
 }

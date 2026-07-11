@@ -1,30 +1,49 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-/** Scroll-triggered reveal used across sections. */
+/**
+ * Feather-light scroll reveal — one IntersectionObserver, no animation library.
+ * Adds `.is-in` (see globals.css) when the element scrolls into view.
+ */
 export function Reveal({
   children,
   delay = 0,
-  y = 28,
-  className,
+  as: Tag = "div",
+  className = "",
 }: {
   children: ReactNode;
   delay?: number;
-  y?: number;
+  as?: "div" | "li" | "section" | "span";
   className?: string;
 }) {
-  const reduce = useReducedMotion();
+  const ref = useRef<HTMLElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || shown) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shown]);
+
+  const Comp = Tag as "div";
   return (
-    <motion.div
-      className={className}
-      initial={reduce ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
+    <Comp
+      ref={ref as React.Ref<HTMLDivElement>}
+      className={`reveal ${shown ? "is-in" : ""} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
-    </motion.div>
+    </Comp>
   );
 }

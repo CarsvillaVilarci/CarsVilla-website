@@ -2,31 +2,26 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BuyExplorer } from "@/components/buy/BuyExplorer";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Buy Certified Used Cars in India",
+  title: "Buy Used Cars in Tamluk",
   description:
-    "Browse 200-point certified used cars with warranty and 7-day money-back. Filter by brand, budget, fuel and body type. RC-verified, doorstep test drives.",
-  alternates: { canonical: "/buy" },
+    "Browse certified pre-owned cars at CarsVilla, Tamluk. Filter by brand, body type, fuel, transmission and budget — every car inspected and best-price guaranteed.",
 };
 
 export default function BuyPage() {
   return (
     <>
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Home", url: "/" },
-          { name: "Buy Cars", url: "/buy" },
-        ])}
-      />
       <PageHeader
-        eyebrow="Buy a car"
-        title="Find your certified pre-owned car"
-        subtitle="Every car is 200-point inspected, RC-verified and backed by warranty. Filter, compare, and book a doorstep test drive."
+        kicker="Buy a car"
+        title="Certified used cars, ready to drive."
+        subtitle="Every car clears a 200-point inspection and comes with a 5-day money-back promise. Filter to find yours."
       />
-      <Suspense fallback={null}>
+      {/* useSearchParams (brand / q deep-links) must run on the client under
+          Suspense so the page still works with static export. */}
+      <Suspense
+        fallback={<div className="container-x py-20 text-center text-muted">Loading inventory…</div>}
+      >
         <BuyExplorer />
       </Suspense>
     </>

@@ -1,28 +1,27 @@
-import { Eyebrow } from "./SectionHeader";
+import { Reveal } from "@/components/ui/Reveal";
 
-/** Consistent hero band for inner pages. */
+/** Shared hero band for inner pages. */
 export function PageHeader({
-  eyebrow,
+  kicker,
   title,
   subtitle,
 }: {
-  eyebrow: string;
-  title: React.ReactNode;
+  kicker: string;
+  title: string;
   subtitle?: string;
 }) {
   return (
-    <section className="relative overflow-hidden border-b border-line pt-28 md:pt-36">
-      <div className="glow-brand absolute inset-x-0 top-0 h-full" />
-      <div className="container-x mx-auto max-w-7xl pb-14">
-        <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.4rem,5.5vw,4.4rem)] font-bold leading-[0.98] text-paper text-balance">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted text-balance">
-            {subtitle}
-          </p>
-        )}
+    <section className="glow-wine border-b border-line/70">
+      <div className="container-x py-14 md:py-20">
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <p className="kicker">{kicker}</p>
+          <h1 className="mt-4 text-balance text-[clamp(2.2rem,5vw,4rem)]">{title}</h1>
+          {subtitle && (
+            <p className="mx-auto mt-5 max-w-xl text-balance text-[1.05rem] leading-relaxed text-muted">
+              {subtitle}
+            </p>
+          )}
+        </Reveal>
       </div>
     </section>
   );

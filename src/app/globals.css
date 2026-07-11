@@ -1,38 +1,42 @@
 @import "tailwindcss";
 
-/* ---------------------------------------------------------------------------
-   CarsVilla design system — refined luxury automotive
-   Near-black canvas · crimson-red signature · sky + yellow accents
---------------------------------------------------------------------------- */
+/* ===========================================================================
+   CarsVilla — design system  ·  "editorial luxury automotive"
+   Warm cream canvas · deep wine signature · champagne hairlines
+   Built light: CSS-only motion, no heavy runtime libraries.
+=========================================================================== */
 @theme {
-  /* Core surfaces */
-  --color-ink: #0a0a0c;
-  --color-ink-2: #101014;
-  --color-surface: #16161c;
-  --color-surface-2: #1d1d25;
-  --color-line: #2a2a33;
+  /* Surfaces */
+  --color-cream: #fdf8f4;
+  --color-cream-2: #f6ece3;
+  --color-paper: #fffdfb;
 
-  /* Text */
-  --color-paper: #f6f5f3;
-  --color-muted: #a1a1ad;
+  /* Wine (brand) */
+  --color-wine: #540f1f;
+  --color-wine-hot: #7a1526;
+  --color-wine-soft: #8b4a56;
 
-  /* Brand */
-  --color-brand: #e11d2a;      /* signature red */
-  --color-brand-hot: #ff2f3e;  /* hover / glow red */
-  --color-brand-deep: #9c0f1a;
-  --color-sky: #7dd3fc;        /* halka sky */
-  --color-gold: #fbbf24;       /* yellow accent */
+  /* Ink / neutrals (warm) */
+  --color-ink: #26191c;
+  --color-muted: #8e7f79;
+  --color-gold: #b0894f;
+  --color-line: rgba(84, 15, 31, 0.14);
 
   /* Type */
-  --font-display: var(--font-bricolage), "Arial Black", sans-serif;
-  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
   /* Motion */
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-luxe: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Radius */
-  --radius-xl: 1.25rem;
-  --radius-2xl: 1.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+
+  /* Shadow (warm-tinted) */
+  --shadow-soft: 0 2px 8px -2px rgba(84, 15, 31, 0.1);
+  --shadow-luxe: 0 40px 80px -32px rgba(84, 15, 31, 0.28);
 }
 
 @layer base {
@@ -41,92 +45,227 @@
   }
 
   html {
-    /* Smooth scrolling is handled by Lenis (JS) — no CSS scroll-behavior needed. */
+    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   body {
-    background-color: var(--color-ink);
-    color: var(--color-paper);
+    background-color: rgba(253, 248, 244, 0.93);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     overflow-x: hidden;
   }
 
   ::selection {
-    background-color: var(--color-brand);
+    background-color: var(--color-wine);
     color: #fff;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
+    font-weight: 500;
     letter-spacing: -0.02em;
-    line-height: 0.98;
+    line-height: 1;
+    color: var(--color-wine);
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar { width: 10px; }
-  ::-webkit-scrollbar-track { background: var(--color-ink); }
+  ::-webkit-scrollbar { width: 11px; }
+  ::-webkit-scrollbar-track { background: var(--color-cream-2); }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-line);
+    background: color-mix(in srgb, var(--color-wine) 55%, transparent);
     border-radius: 999px;
-    border: 2px solid var(--color-ink);
+    border: 3px solid var(--color-cream-2);
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-wine); }
 }
 
-/* ------------------------------- Utilities ------------------------------- */
 @layer utilities {
-  /* Fine film grain overlay for premium depth */
+  /* Page gutter */
+  .container-x { padding-inline: clamp(1.5rem, 5vw, 6rem); }
+
+  /* Fine paper grain — barely-there premium texture */
   .grain::after {
     content: "";
     position: fixed;
     inset: 0;
     z-index: 100;
     pointer-events: none;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .text-balance { text-wrap: balance; }
 
-  .container-x { padding-inline: clamp(1.25rem, 5vw, 5rem); }
-
-  /* Radial glow used behind hero + section highlights */
-  .glow-brand {
-    background: radial-gradient(60% 60% at 50% 0%, rgba(225, 29, 42, 0.22), transparent 70%);
+  /* Warm radial wash behind the hero */
+  .glow-wine {
+    background: radial-gradient(60% 55% at 50% 0%, rgba(84, 15, 31, 0.1), transparent 72%);
   }
 
-  .ring-hairline {
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  }
-
-  .gradient-outline {
+  /* Refined animated placeholder shown until the R2 hero video URL is set */
+  .hero-fallback {
     background:
-      linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-      linear-gradient(135deg, rgba(225,29,42,0.6), rgba(125,211,252,0.35), rgba(251,191,36,0.4)) border-box;
-    border: 1px solid transparent;
+      radial-gradient(90% 120% at 20% 0%, rgba(176, 137, 79, 0.35), transparent 60%),
+      radial-gradient(90% 120% at 90% 20%, rgba(122, 21, 38, 0.6), transparent 55%),
+      linear-gradient(120deg, #3a0a15, #540f1f 45%, #1c0a10);
+    background-size: 200% 200%;
+    animation: heroPan 18s ease-in-out infinite alternate;
+  }
+  @keyframes heroPan {
+    to { background-position: 100% 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-fallback { animation: none; }
   }
 
-  /* Staggered page-load reveal */
+  /* Eyebrow / section kicker */
+  .kicker {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-wine-soft);
+  }
+
+  /* Animated underline for nav links */
+  .u-line {
+    background-image: linear-gradient(var(--color-wine), var(--color-wine));
+    background-size: 0% 1.5px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s var(--ease-luxe);
+  }
+  .u-line:hover { background-size: 100% 1.5px; }
+
+  /* Infinite brand marquee */
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+  }
+  .marquee-mask:hover .marquee-track { animation-play-state: paused; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* Staggered load reveal (used by <Reveal>) */
   .reveal {
     opacity: 0;
-    transform: translateY(24px);
-    animation: reveal 0.9s var(--ease-out-expo) forwards;
+    transform: translateY(22px);
+    transition: opacity 0.9s var(--ease-luxe), transform 0.9s var(--ease-luxe);
+    will-change: opacity, transform;
   }
-  @keyframes reveal {
-    to { opacity: 1; transform: translateY(0); }
+  .reveal.is-in { opacity: 1; transform: none; }
+
+  /* ---- Desktop header: a few cars racing / overtaking across ---- */
+  .header-cars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hcar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    animation-name: carDrive;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    /* duration, delay, lane, z-index are set PER CAR inline (randomised on the
+       client) so the traffic ebbs and flows and never loops on a short cycle */
+  }
+  /* car crosses in the first ~30%, then waits off-screen (~70%) before its next lap */
+  @keyframes carDrive {
+    0% { transform: translateX(-90px); }
+    30% { transform: translateX(calc(100vw + 64px)); }
+    100% { transform: translateX(calc(100vw + 64px)); }
   }
 
-  .marquee-track {
-    animation: marquee 32s linear infinite;
-    width: max-content;
+  /* RACE: line up at the left, hold ~4s (grid), then launch & accelerate across.
+     Per-car animation-timing-function (ease-in variants) makes them overtake. */
+  @keyframes carRace {
+    0% { transform: translateX(24px); }
+    36% { transform: translateX(24px); }
+    92% { transform: translateX(calc(100vw + 64px)); }
+    100% { transform: translateX(calc(100vw + 64px)); }
   }
-  @keyframes marquee {
-    to { transform: translateX(-50%); }
+  /* subtle suspension bob (engine idle feel) */
+  .car-bob { animation: carBob 0.5s ease-in-out infinite alternate; }
+  @keyframes carBob { to { transform: translateY(-0.7px); } }
+  /* wheels roll in place */
+  .wheel-roll {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: wheelRoll 0.7s linear infinite;
   }
+  @keyframes wheelRoll { to { transform: rotate(360deg); } }
+
+  /* ---- Auction: live bid tick flashes ---- */
+  .tick-up { animation: tickUp 0.9s ease; }
+  .tick-down { animation: tickDown 0.9s ease; }
+  @keyframes tickUp {
+    0% { background-color: rgba(16, 185, 129, 0.28); }
+    100% { background-color: transparent; }
+  }
+  @keyframes tickDown {
+    0% { background-color: rgba(225, 29, 42, 0.22); }
+    100% { background-color: transparent; }
+  }
+  .live-dot { animation: livePulse 1.6s ease-in-out infinite; }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.8); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tick-up, .tick-down, .live-dot { animation: none; }
+  }
+
+  /* ---- 404 page motion ---- */
+  .wheel-spin {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: wheelspin 2.2s linear infinite;
+  }
+  @keyframes wheelspin { to { transform: rotate(360deg); } }
+
+  .float-soft { animation: floatsoft 4.5s ease-in-out infinite; }
+  @keyframes floatsoft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .nf-road {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--color-wine) 0 26px,
+      transparent 26px 48px
+    );
+    animation: roadmove 0.8s linear infinite;
+  }
+  @keyframes roadmove { to { background-position: -48px 0; } }
+
+  /* Staggered entrance (use with inline animation-delay) */
+  .rise {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: rise 0.9s var(--ease-luxe) forwards;
+  }
+  @keyframes rise { to { opacity: 1; transform: none; } }
 
   @media (prefers-reduced-motion: reduce) {
-    .reveal, .marquee-track { animation: none; opacity: 1; transform: none; }
+    .marquee-track,
+    .wheel-spin,
+    .float-soft,
+    .nf-road,
+    .hcar,
+    .car-bob,
+    .wheel-roll { animation: none; }
+    .header-cars { display: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .rise { opacity: 1; transform: none; animation: none; }
+    html { scroll-behavior: auto; }
   }
 }

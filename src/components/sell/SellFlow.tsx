@@ -1,256 +1,310 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, BadgeCheck, Banknote, Car, Sparkles } from "lucide-react";
-import { sellBrands } from "@/lib/cars";
-import { formatINR } from "@/lib/utils";
-import { Label, Input, Select } from "@/components/ui/Field";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, BadgeIndianRupee, CalendarCheck, RotateCcw } from "lucide-react";
+import { brands, fuels, transmissions, formatINR } from "@/lib/demo";
 
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 15 }, (_, i) => currentYear - i);
-const fuels = ["Petrol", "Diesel", "CNG", "Electric", "Hybrid"];
-
-// Rough brand tiers to make the mock valuation feel plausible.
-const brandBase: Record<string, number> = {
-  "Maruti Suzuki": 900000, Hyundai: 1100000, Tata: 1150000, Honda: 1200000,
-  Kia: 1400000, Mahindra: 1500000, Toyota: 1700000,
+type Fields = {
+  brand: string;
+  model: string;
+  year: string;
+  fuel: string;
+  transmission: string;
+  km: string;
+  owner: string;
+  condition: string;
+  city: string;
+  name: string;
+  phone: string;
 };
 
-function estimate(brand: string, year: number, km: number, owners: number) {
-  const base = brandBase[brand] ?? 1000000;
-  const age = Math.max(0, currentYear - year);
-  const depreciation = Math.pow(0.86, age); // ~14% / yr
-  const kmFactor = Math.max(0.6, 1 - km / 400000);
-  const ownerFactor = owners === 1 ? 1 : owners === 2 ? 0.93 : 0.85;
-  const mid = base * depreciation * kmFactor * ownerFactor;
-  return { low: Math.round(mid * 0.94), high: Math.round(mid * 1.06) };
+const EMPTY: Fields = {
+  brand: "",
+  model: "",
+  year: "",
+  fuel: "Petrol",
+  transmission: "Manual",
+  km: "",
+  owner: "First",
+  condition: "Good",
+  city: "Tamluk",
+  name: "",
+  phone: "",
+};
+
+const YEARS = Array.from({ length: 17 }, (_, i) => 2026 - i);
+const CITIES = ["Tamluk", "Haldia", "Mecheda", "Panskura", "Contai", "Kolkata"];
+const OWNERS = ["First", "Second", "Third+"];
+const CONDITIONS = ["Excellent", "Good", "Fair"];
+
+const BRAND_BASE: Record<string, number> = {
+  "Maruti Suzuki": 700000, Hyundai: 950000, Tata: 800000, Mahindra: 900000,
+  Toyota: 1200000, Honda: 950000, Kia: 1000000, Volkswagen: 900000,
+  Skoda: 950000, MG: 1000000, BMW: 2600000, "Mercedes-Benz": 2800000,
+  Audi: 2600000, Renault: 650000,
+};
+
+function valuate(f: Fields): { low: number; high: number } {
+  const base = BRAND_BASE[f.brand] ?? 800000;
+  const age = Math.max(0, 2026 - (Number(f.year) || 2026));
+  const yearF = Math.max(0.3, 1 - age * 0.08);
+  const kmF = Math.max(0.5, 1 - (Number(f.km) || 0) / 100000 * 0.15);
+  const condF = f.condition === "Excellent" ? 1 : f.condition === "Fair" ? 0.78 : 0.9;
+  const ownF = f.owner === "First" ? 1 : f.owner === "Third+" ? 0.85 : 0.93;
+  const fuelF = f.fuel === "Diesel" ? 1.02 : f.fuel === "Electric" ? 1.05 : f.fuel === "CNG" ? 0.95 : 1;
+  const mid = base * yearF * kmF * condF * ownF * fuelF;
+  const round = (n: number) => Math.round(n / 10000) * 10000;
+  return { low: round(mid * 0.94), high: round(mid * 1.06) };
 }
+
+const STEPS = ["Your car", "Condition", "Your details"];
 
 export function SellFlow() {
   const [step, setStep] = useState(0);
-  const [brand, setBrand] = useState("");
-  const [model, setModel] = useState("");
-  const [year, setYear] = useState<number | "">("");
-  const [km, setKm] = useState<number | "">("");
-  const [owners, setOwners] = useState(1);
-  const [fuel, setFuel] = useState("Petrol");
-  const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
-  const [done, setDone] = useState(false);
+  const [f, setF] = useState<Fields>(EMPTY);
+  const [quote, setQuote] = useState<{ low: number; high: number } | null>(null);
+
+  const set = (k: keyof Fields, v: string) => setF((prev) => ({ ...prev, [k]: v }));
 
   const canNext =
-    (step === 0 && brand && model) ||
-    (step === 1 && year && km !== "" && fuel) ||
-    (step === 2 && city && phone.length >= 10);
+    step === 0
+      ? f.brand && f.model.trim() && f.year
+      : step === 1
+        ? f.km.trim()
+        : f.name.trim() && f.phone.replace(/\D/g, "").length >= 10;
 
-  const quote =
-    year && km !== ""
-      ? estimate(brand, Number(year), Number(km), owners)
-      : null;
+  if (quote) {
+    return (
+      <div className="rounded-[var(--radius-2xl)] border border-line bg-paper p-8 shadow-luxe md:p-10">
+        <span className="inline-flex items-center gap-2 rounded-full bg-wine/8 px-3 py-1 text-xs font-semibold text-wine">
+          <BadgeIndianRupee size={14} /> Estimated value
+        </span>
+        <p className="mt-5 text-sm text-muted">Your {f.year} {f.brand} {f.model} could fetch</p>
+        <p className="mt-1 font-display text-[clamp(2.2rem,6vw,3.4rem)] leading-none text-wine">
+          {formatINR(quote.low)} – {formatINR(quote.high)}
+        </p>
+        <p className="mt-4 max-w-md text-sm text-muted">
+          This is an instant estimate. Book a free 60-minute doorstep inspection to lock your exact
+          price and get paid on the spot. <span className="text-ink">(Demo — no data is stored yet.)</span>
+        </p>
 
-  const steps = ["Your car", "Details", "Contact"];
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Link
+            href="/contact?intent=sell"
+            className="inline-flex items-center gap-2 rounded-full bg-wine px-6 py-3.5 text-sm font-semibold text-cream transition-colors hover:bg-wine-hot"
+          >
+            <CalendarCheck size={16} /> Book free pickup
+          </Link>
+          <button
+            onClick={() => {
+              setQuote(null);
+              setStep(0);
+              setF(EMPTY);
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-line px-6 py-3.5 text-sm font-semibold text-ink hover:border-wine/40"
+          >
+            <RotateCcw size={15} /> Start over
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr]">
-      {/* Form */}
-      <div className="rounded-[2rem] border border-line bg-surface p-8 md:p-10">
-        {/* progress */}
-        <div className="mb-8 flex items-center gap-3">
-          {steps.map((s, i) => (
-            <div key={s} className="flex flex-1 items-center gap-3">
-              <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                  i <= step ? "bg-brand text-white" : "bg-ink-2 text-muted"
-                }`}
-              >
-                {i + 1}
-              </div>
-              {i < steps.length - 1 && (
-                <div className={`h-px flex-1 ${i < step ? "bg-brand" : "bg-line"}`} />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {done ? (
-          <SubmittedState />
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+    <div className="rounded-[var(--radius-2xl)] border border-line bg-paper p-6 shadow-luxe md:p-8">
+      {/* progress */}
+      <ol className="mb-7 flex items-center gap-2">
+        {STEPS.map((label, i) => (
+          <li key={label} className="flex flex-1 items-center gap-2">
+            <span
+              className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${
+                i <= step ? "bg-wine text-cream" : "border border-line text-muted"
+              }`}
             >
-              <h2 className="font-display text-2xl text-paper">{steps[step]}</h2>
-
-              {step === 0 && (
-                <div className="mt-6 grid gap-5">
-                  <div>
-                    <Label>Brand</Label>
-                    <Select
-                      value={brand}
-                      onChange={(e) => { setBrand(e.target.value); setModel(""); }}
-                    >
-                      <option value="">Select brand</option>
-                      {Object.keys(sellBrands).map((b) => (
-                        <option key={b}>{b}</option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Model</Label>
-                    <Select value={model} onChange={(e) => setModel(e.target.value)} disabled={!brand}>
-                      <option value="">{brand ? "Select model" : "Choose brand first"}</option>
-                      {brand && sellBrands[brand]?.map((m) => <option key={m}>{m}</option>)}
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              {step === 1 && (
-                <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <Label>Year</Label>
-                    <Select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-                      <option value="">Select year</option>
-                      {years.map((y) => <option key={y}>{y}</option>)}
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>KM driven</Label>
-                    <Input
-                      type="number" inputMode="numeric" placeholder="e.g. 32000"
-                      value={km} onChange={(e) => setKm(e.target.value === "" ? "" : Number(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label>Fuel type</Label>
-                    <Select value={fuel} onChange={(e) => setFuel(e.target.value)}>
-                      {fuels.map((f) => <option key={f}>{f}</option>)}
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Owners</Label>
-                    <Select value={owners} onChange={(e) => setOwners(Number(e.target.value))}>
-                      <option value={1}>1st owner</option>
-                      <option value={2}>2nd owner</option>
-                      <option value={3}>3rd owner or more</option>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="mt-6 grid gap-5">
-                  <div>
-                    <Label>City</Label>
-                    <Input placeholder="e.g. Bengaluru" value={city} onChange={(e) => setCity(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label>Mobile number</Label>
-                    <Input
-                      type="tel" inputMode="numeric" placeholder="10-digit mobile"
-                      value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    />
-                  </div>
-                  <p className="text-xs text-muted">
-                    By continuing you agree to receive a call from a CarsVilla advisor. Demo only — no data is stored.
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-8 flex gap-3">
-                {step > 0 && (
-                  <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
-                    <ArrowLeft className="h-4 w-4" /> Back
-                  </Button>
-                )}
-                {step < 2 ? (
-                  <Button onClick={() => setStep((s) => s + 1)} disabled={!canNext} className="flex-1">
-                    Continue <ArrowRight className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button onClick={() => setDone(true)} disabled={!canNext} className="flex-1">
-                    Get my price <ArrowRight className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        )}
-      </div>
-
-      {/* Live quote panel */}
-      <div className="lg:sticky lg:top-24 lg:h-fit">
-        <div className="relative overflow-hidden rounded-[2rem] border border-line bg-gradient-to-br from-surface to-ink p-8">
-          <div className="glow-brand absolute inset-0" />
-          <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-white/5 px-3 py-1 text-xs text-sky">
-              <Sparkles className="h-3.5 w-3.5" /> Live estimate
+              {i + 1}
             </span>
-            {quote ? (
-              <>
-                <p className="mt-6 text-sm text-muted">Estimated selling price</p>
-                <p className="mt-1 font-display text-4xl text-paper">
-                  {formatINR(quote.low)} – {formatINR(quote.high)}
-                </p>
-                <p className="mt-2 text-sm text-muted">
-                  {brand} {model} {year && `· ${year}`}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="mt-6 font-display text-3xl leading-tight text-paper">
-                  Fill in your car details for an instant price
-                </p>
-                <p className="mt-3 text-muted">
-                  Our pricing engine values your car against thousands of live market data points.
-                </p>
-              </>
-            )}
+            <span className={`hidden text-sm font-medium sm:block ${i === step ? "text-ink" : "text-muted"}`}>
+              {label}
+            </span>
+            {i < STEPS.length - 1 && <span className="h-px flex-1 bg-line" />}
+          </li>
+        ))}
+      </ol>
 
-            <div className="mt-8 space-y-4 border-t border-line pt-6">
-              {[
-                { Icon: Banknote, t: "Same-day payment", d: "Money in your account instantly" },
-                { Icon: Car, t: "Free doorstep pickup", d: "We come to you, anywhere in the city" },
-                { Icon: BadgeCheck, t: "No hidden charges", d: "The price we quote is what you get" },
-              ].map((f) => (
-                <div key={f.t} className="flex gap-3">
-                  <f.Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
-                  <div>
-                    <p className="font-semibold text-paper">{f.t}</p>
-                    <p className="text-sm text-muted">{f.d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {step === 0 && (
+        <div className="space-y-5">
+          <Row>
+            <Field label="Brand">
+              <Select value={f.brand} onChange={(v) => set("brand", v)} placeholder="Select brand">
+                {brands.map((b) => (
+                  <option key={b.slug} value={b.name}>{b.name}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Model">
+              <input className={input} value={f.model} onChange={(e) => set("model", e.target.value)} placeholder="e.g. Creta" />
+            </Field>
+          </Row>
+          <Row>
+            <Field label="Year">
+              <Select value={f.year} onChange={(v) => set("year", v)} placeholder="Select year">
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Fuel">
+              <Chips value={f.fuel} onChange={(v) => set("fuel", v)} options={fuels} />
+            </Field>
+          </Row>
+          <Field label="Transmission">
+            <Chips value={f.transmission} onChange={(v) => set("transmission", v)} options={transmissions} />
+          </Field>
         </div>
+      )}
+
+      {step === 1 && (
+        <div className="space-y-5">
+          <Field label="Kilometers driven">
+            <input
+              className={input}
+              inputMode="numeric"
+              value={f.km}
+              onChange={(e) => set("km", e.target.value.replace(/[^\d]/g, ""))}
+              placeholder="e.g. 42000"
+            />
+          </Field>
+          <Field label="Ownership">
+            <Chips value={f.owner} onChange={(v) => set("owner", v)} options={OWNERS} />
+          </Field>
+          <Field label="Overall condition">
+            <Chips value={f.condition} onChange={(v) => set("condition", v)} options={CONDITIONS} />
+          </Field>
+          <Field label="City">
+            <Select value={f.city} onChange={(v) => set("city", v)}>
+              {CITIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="space-y-5">
+          <Field label="Full name">
+            <input className={input} value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="Aarav Sharma" />
+          </Field>
+          <Field label="Phone">
+            <input
+              className={input}
+              type="tel"
+              value={f.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              placeholder="+91 90000 00000"
+            />
+          </Field>
+          <p className="text-xs text-muted">We&apos;ll only use this to share your valuation and schedule pickup.</p>
+        </div>
+      )}
+
+      {/* nav */}
+      <div className="mt-8 flex items-center justify-between gap-3">
+        {step > 0 ? (
+          <button onClick={() => setStep((s) => s - 1)} className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-wine">
+            <ArrowLeft size={16} /> Back
+          </button>
+        ) : (
+          <span />
+        )}
+        {step < STEPS.length - 1 ? (
+          <button
+            onClick={() => canNext && setStep((s) => s + 1)}
+            disabled={!canNext}
+            className="inline-flex items-center gap-2 rounded-full bg-wine px-6 py-3 text-sm font-semibold text-cream transition-colors hover:bg-wine-hot disabled:opacity-40"
+          >
+            Continue <ArrowRight size={16} />
+          </button>
+        ) : (
+          <button
+            onClick={() => canNext && setQuote(valuate(f))}
+            disabled={!canNext}
+            className="inline-flex items-center gap-2 rounded-full bg-wine px-6 py-3 text-sm font-semibold text-cream transition-colors hover:bg-wine-hot disabled:opacity-40"
+          >
+            Get my price <BadgeIndianRupee size={16} />
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-function SubmittedState() {
+const input =
+  "w-full rounded-xl border border-line bg-cream/50 px-4 py-3 text-sm text-ink placeholder:text-muted outline-none transition-all focus:border-wine/40 focus:bg-paper";
+
+function Row({ children }: { children: React.ReactNode }) {
+  return <div className="grid gap-5 sm:grid-cols-2">{children}</div>;
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="py-8 text-center"
-    >
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand/15 text-brand">
-        <BadgeCheck className="h-8 w-8" />
-      </div>
-      <h2 className="mt-6 font-display text-3xl text-paper">You&apos;re all set!</h2>
-      <p className="mx-auto mt-3 max-w-sm text-muted">
-        A CarsVilla advisor will call you shortly to confirm your car&apos;s final price and
-        schedule a free doorstep evaluation.
-      </p>
-      <p className="mt-6 text-xs text-muted">Demo submission — no data was stored.</p>
-    </motion.div>
+    <label className="block">
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function Select({
+  value,
+  onChange,
+  children,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+  placeholder?: string;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${input} cursor-pointer appearance-none pr-9 ${!value ? "text-muted" : ""}`}
+      >
+        {placeholder && <option value="">{placeholder}</option>}
+        {children}
+      </select>
+      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">▾</span>
+    </div>
+  );
+}
+
+function Chips({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: readonly string[];
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((o) => (
+        <button
+          key={o}
+          type="button"
+          onClick={() => onChange(o)}
+          className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+            value === o ? "border-wine bg-wine text-cream" : "border-line text-ink hover:border-wine/40"
+          }`}
+        >
+          {o}
+        </button>
+      ))}
+    </div>
   );
 }

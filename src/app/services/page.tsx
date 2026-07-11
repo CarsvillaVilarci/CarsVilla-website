@@ -1,66 +1,62 @@
 import type { Metadata } from "next";
-import { Check } from "lucide-react";
-import { services } from "@/lib/services";
+import { Zap } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Reveal } from "@/components/ui/Reveal";
-import { Button } from "@/components/ui/Button";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { RcCheck } from "@/components/services/RcCheck";
+import { services } from "@/lib/services";
 
 export const metadata: Metadata = {
-  title: "Car Services — RC Transfer, Insurance, Financing & More",
+  title: "Services & Vehicle Tools",
   description:
-    "Everything your car needs in one place: RC transfer, car insurance, used-car loans, 200-point inspection, servicing & detailing, and assured buyback.",
-  alternates: { canonical: "/services" },
+    "RC / vehicle check, challan lookup, instant valuation, RC transfer, insurance, financing and more — all of CarsVilla's car services and API tools in one place.",
 };
 
 export default function ServicesPage() {
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Services", url: "/services" }])} />
       <PageHeader
-        eyebrow="Services"
-        title="One garage for everything your car needs"
-        subtitle="From paperwork to protection, we handle the parts of car ownership nobody enjoys — so you can just drive."
+        kicker="Services & vehicle tools"
+        title="Everything your car needs, in one place."
+        subtitle="From an instant RC check to insurance, financing and doorstep RC transfer — the full CarsVilla toolkit, several powered by live APIs."
       />
 
-      <section className="container-x mx-auto max-w-7xl py-16">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Flagship: RC check tool */}
+      <section className="container-x py-14">
+        <Reveal>
+          <RcCheck />
+        </Reveal>
+      </section>
+
+      {/* All services */}
+      <section className="container-x pb-16">
+        <Reveal className="mb-9">
+          <p className="kicker">All services</p>
+          <h2 className="mt-3 text-[clamp(1.9rem,3vw,2.8rem)]">Pick what you need</h2>
+        </Reveal>
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s, i) => (
-            <Reveal key={s.slug} delay={0.05 * i}>
-              <div className="group flex h-full flex-col rounded-[1.8rem] border border-line bg-surface/60 p-8 transition-all duration-500 hover:-translate-y-1.5 hover:border-brand/40">
-                <div className="flex items-center justify-between">
-                  <span className="grid h-14 w-14 place-items-center rounded-2xl border border-line bg-ink text-brand transition-colors group-hover:border-brand">
-                    <s.Icon className="h-7 w-7" />
-                  </span>
-                  <span className="rounded-full border border-line px-3 py-1 text-xs font-semibold text-sky">
-                    {s.price}
-                  </span>
-                </div>
-
-                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-                  {s.tagline}
-                </p>
-                <h2 className="mt-1 font-display text-2xl text-paper">{s.title}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{s.description}</p>
-
-                <ul className="mt-6 space-y-2.5">
-                  {s.points.map((p) => (
-                    <li key={p} className="flex items-center gap-3 text-sm text-paper/85">
-                      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand/15 text-brand">
-                        <Check className="h-3 w-3" />
-                      </span>
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-8 pt-2">
-                  <Button href="/contact" variant="outline" size="sm" className="w-full">
-                    Book {s.title}
-                  </Button>
-                </div>
+            <Reveal
+              key={s.slug}
+              delay={i * 60}
+              className="group flex flex-col rounded-[var(--radius-xl)] border border-line bg-paper p-6 shadow-soft transition-all hover:-translate-y-1 hover:shadow-luxe"
+            >
+              <div className="flex items-start justify-between">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-wine/8 text-wine">
+                  <s.icon size={22} strokeWidth={1.6} />
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.7rem] font-semibold ${
+                    s.api ? "bg-wine text-cream" : "border border-line text-muted"
+                  }`}
+                >
+                  {s.api && <Zap size={11} />}
+                  {s.badge}
+                </span>
               </div>
+              <h3 className="mt-5 font-display text-xl text-ink">{s.name}</h3>
+              <p className="mt-0.5 text-sm font-medium text-wine-soft">{s.tagline}</p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{s.description}</p>
             </Reveal>
           ))}
         </div>

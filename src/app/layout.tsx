@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Manrope } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
-import { orgJsonLd, websiteJsonLd } from "@/lib/seo";
-import { JsonLd } from "@/components/seo/JsonLd";
-import SmoothScroll from "@/components/providers/SmoothScroll";
-import { Navbar } from "@/components/layout/Navbar";
+import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { BottomNav } from "@/components/mobile/BottomNav";
 
-const bricolage = Bricolage_Grotesque({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  variable: "--font-fraunces",
   display: "swap",
+  axes: ["opsz"],
 });
 
 const manrope = Manrope({
@@ -21,52 +21,37 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — Buy & Sell Used Cars in India | Certified Pre-Owned`,
+    default: `${site.name} — ${site.tagline}`,
     template: `%s | ${site.name}`,
   },
-  description: site.description,
-  keywords: [
-    "used cars", "sell my car", "buy used cars India", "certified pre-owned cars",
-    "second hand cars", "car valuation", "sell car online", "used car dealer",
-  ],
-  authors: [{ name: site.name }],
-  creator: site.name,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    locale: site.locale,
-    url: site.url,
-    siteName: site.name,
-    title: `${site.name} — Buy & Sell Used Cars in India`,
-    description: site.description,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${site.name} — Buy & Sell Used Cars in India`,
-    description: site.description,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
-  },
+  description:
+    "Buy and sell certified pre-owned cars with CarsVilla. Best price guaranteed, 200-point inspection, doorstep paperwork and instant payment.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-IN" className={`${bricolage.variable} ${manrope.variable}`}>
+    <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable}`}>
       <body className="grain min-h-screen antialiased">
-        <JsonLd data={orgJsonLd()} />
-        <JsonLd data={websiteJsonLd()} />
-        <SmoothScroll>
-          <Navbar />
-          <main>{children}</main>
+        {/* Desktop chrome (≥1024px) */}
+        <div className="hidden lg:contents">
+          <Header />
+        </div>
+        {/* Mobile app chrome (<1024px) */}
+        <div className="lg:hidden">
+          <MobileHeader />
+        </div>
+
+        <main className="pb-24 lg:pb-0">{children}</main>
+
+        <div className="hidden lg:contents">
           <Footer />
-        </SmoothScroll>
+        </div>
+        <div className="lg:hidden">
+          <BottomNav />
+        </div>
       </body>
     </html>
   );

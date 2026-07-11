@@ -1,61 +1,64 @@
 import type { Metadata } from "next";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ContactForm } from "@/components/contact/ContactForm";
+import { EnquiryBox } from "@/components/home/EnquiryBox";
+import { Reveal } from "@/components/ui/Reveal";
 import { site } from "@/lib/site";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Contact CarsVilla — We're Here to Help",
+  title: "Contact us",
   description:
-    "Get in touch with CarsVilla for buying, selling, RC transfer, insurance or financing. Call, email or drop us a message — we respond within hours.",
-  alternates: { canonical: "/contact" },
+    "Get in touch with CarsVilla, Tamluk. Call, email or send an enquiry to buy, sell or service your car — a real advisor responds within the hour.",
 };
 
-const info = [
-  { Icon: Phone, label: "Call us", value: site.phone, href: `tel:${site.phone}` },
-  { Icon: Mail, label: "Email us", value: site.email, href: `mailto:${site.email}` },
-  { Icon: MapPin, label: "Visit us", value: `${site.address.street}, ${site.address.city}` },
-  { Icon: Clock, label: "Hours", value: "Mon–Sun · 9am to 9pm" },
+const details = [
+  { icon: Phone, label: "Call us", value: site.phone, href: `tel:${site.phone.replace(/\s/g, "")}` },
+  { icon: Mail, label: "Email", value: site.email, href: `mailto:${site.email}` },
+  { icon: MapPin, label: "Showroom", value: "Nimtouri, Tamluk, Purba Medinipur, WB 721636" },
+  { icon: Clock, label: "Open", value: "Mon–Sun · 9:30 AM – 8:00 PM" },
 ];
 
 export default function ContactPage() {
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Contact", url: "/contact" }])} />
       <PageHeader
-        eyebrow="Contact"
-        title="Let's talk cars"
-        subtitle="Whether you're buying, selling or just have a question — our team is one message away."
+        kicker="Contact us"
+        title="Talk to a real CarsVilla advisor."
+        subtitle="Buying, selling or servicing — reach out any way you like. No call centres, no bots."
       />
 
-      <section className="container-x mx-auto max-w-7xl py-14">
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="flex flex-col gap-4">
-            {info.map((it) => {
-              const inner = (
-                <div className="flex items-center gap-4 rounded-3xl border border-line bg-surface/60 p-6 transition-colors hover:border-brand/40">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-line bg-ink text-brand">
-                    <it.Icon className="h-6 w-6" />
-                  </span>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-muted">{it.label}</p>
-                    <p className="mt-0.5 font-semibold text-paper">{it.value}</p>
-                  </div>
-                </div>
-              );
-              return it.href ? (
-                <a key={it.label} href={it.href}>{inner}</a>
-              ) : (
-                <div key={it.label}>{inner}</div>
-              );
-            })}
-          </div>
-
-          <ContactForm />
+      <section className="container-x py-14">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {details.map((d, i) => {
+            const inner = (
+              <>
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-wine/8 text-wine">
+                  <d.icon size={20} strokeWidth={1.6} />
+                </span>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted">{d.label}</p>
+                <p className="mt-1 font-medium text-ink">{d.value}</p>
+              </>
+            );
+            return (
+              <Reveal
+                key={d.label}
+                delay={i * 70}
+                className="rounded-[var(--radius-xl)] border border-line bg-paper p-6 shadow-soft"
+              >
+                {d.href ? (
+                  <a href={d.href} className="block transition-colors hover:text-wine">
+                    {inner}
+                  </a>
+                ) : (
+                  inner
+                )}
+              </Reveal>
+            );
+          })}
         </div>
       </section>
+
+      <EnquiryBox />
     </>
   );
 }

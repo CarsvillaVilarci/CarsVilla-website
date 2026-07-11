@@ -1,77 +1,105 @@
 import {
-  FileCheck2, ShieldPlus, Landmark, Wrench, RefreshCcw, ScanSearch,
+  ArrowLeftRight,
+  BadgeCheck,
+  ClipboardCheck,
+  FileSearch,
+  Landmark,
+  ReceiptText,
+  TrendingUp,
+  Umbrella,
   type LucideIcon,
 } from "lucide-react";
 
-export interface Service {
+export type Service = {
   slug: string;
-  title: string;
+  name: string;
   tagline: string;
   description: string;
-  Icon: LucideIcon;
-  points: string[];
-  price: string;
-}
+  icon: LucideIcon;
+  /** true = powered by a live third-party API (VAHAN / RTO / insurer, wired in Phase 2) */
+  api: boolean;
+  badge: string;
+};
 
 export const services: Service[] = [
   {
-    slug: "rc-transfer",
-    title: "RC Transfer",
-    tagline: "Paperwork, sorted",
+    slug: "rc-check",
+    name: "RC / Vehicle Check",
+    tagline: "Instant registration lookup",
     description:
-      "End-to-end ownership transfer handled by our RTO experts. Track every step online until the RC lands in your name.",
-    Icon: FileCheck2,
-    points: ["Doorstep document pickup", "Live RTO status tracking", "Insurance name change included"],
-    price: "From ₹1,999",
+      "Enter any number plate to pull make, model, year, fuel, RTO, insurance status and owner details — straight from the VAHAN database.",
+    icon: FileSearch,
+    api: true,
+    badge: "Live API",
+  },
+  {
+    slug: "challan-check",
+    name: "Challan / Fine Check",
+    tagline: "Pending traffic e-challans",
+    description:
+      "Check outstanding traffic challans and fines against a vehicle before you buy — no surprises after the deal.",
+    icon: ReceiptText,
+    api: true,
+    badge: "Live API",
+  },
+  {
+    slug: "valuation",
+    name: "Instant Valuation",
+    tagline: "Know the fair market price",
+    description:
+      "Get a data-backed price estimate for any car in seconds, based on model, year, km and condition.",
+    icon: TrendingUp,
+    api: true,
+    badge: "Instant",
+  },
+  {
+    slug: "rc-transfer",
+    name: "RC Transfer",
+    tagline: "Ownership, handled for you",
+    description:
+      "End-to-end registration-certificate transfer — forms, RTO visits and follow-ups managed by the CarsVilla team.",
+    icon: ArrowLeftRight,
+    api: false,
+    badge: "Doorstep",
   },
   {
     slug: "insurance",
-    title: "Car Insurance",
-    tagline: "Cover in minutes",
+    name: "Car Insurance",
+    tagline: "Compare & renew in minutes",
     description:
-      "Compare and buy comprehensive or third-party insurance from top insurers at exclusive CarsVilla rates.",
-    Icon: ShieldPlus,
-    points: ["Instant policy issuance", "Cashless garage network", "Zero-dep add-ons"],
-    price: "From ₹6,499/yr",
+      "Compare quotes from top insurers and renew or buy a new policy without the paperwork or waiting.",
+    icon: Umbrella,
+    api: true,
+    badge: "Partners",
   },
   {
     slug: "financing",
-    title: "Car Loan & Financing",
-    tagline: "Drive now, pay easy",
+    name: "Car Loan & Financing",
+    tagline: "Pre-approved, up to 90%",
     description:
-      "Pre-approved used-car loans up to 90% of value with tenures up to 7 years and interest from 9.5%.",
-    Icon: Landmark,
-    points: ["Approval in 30 minutes", "EMI from ₹9,999/mo", "Minimal documentation"],
-    price: "Rates from 9.5%",
+      "Instant pre-approved used-car loans from leading banks and NBFCs with flexible tenures and quick disbursal.",
+    icon: Landmark,
+    api: true,
+    badge: "Partners",
+  },
+  {
+    slug: "warranty",
+    name: "Extended Warranty",
+    tagline: "Peace of mind, extended",
+    description:
+      "Cover engine, gearbox and major components for up to 3 years on any certified CarsVilla car.",
+    icon: BadgeCheck,
+    api: false,
+    badge: "Add-on",
   },
   {
     slug: "inspection",
-    title: "200-Point Inspection",
-    tagline: "Know before you buy",
+    name: "Doorstep Inspection",
+    tagline: "200-point certified check",
     description:
-      "Book a certified engineer to inspect any car — ours or elsewhere — with a full digital condition report.",
-    Icon: ScanSearch,
-    points: ["Engine to electronics", "Photo-backed report", "Resale value estimate"],
-    price: "From ₹1,499",
-  },
-  {
-    slug: "servicing",
-    title: "Service & Detailing",
-    tagline: "Showroom shine",
-    description:
-      "Periodic servicing, denting-painting and premium detailing at partner workshops with genuine parts.",
-    Icon: Wrench,
-    points: ["Genuine spare parts", "Ceramic coating", "Pickup & drop"],
-    price: "From ₹2,999",
-  },
-  {
-    slug: "buyback",
-    title: "Assured Buyback",
-    tagline: "Value protected",
-    description:
-      "Lock a guaranteed buyback price when you purchase, so upgrading your next car is always effortless.",
-    Icon: RefreshCcw,
-    points: ["Price locked upfront", "No depreciation shock", "Upgrade anytime"],
-    price: "Complimentary",
+      "Book a certified inspector to a 200-point evaluation at your home and get a full condition report.",
+    icon: ClipboardCheck,
+    api: false,
+    badge: "Doorstep",
   },
 ];
