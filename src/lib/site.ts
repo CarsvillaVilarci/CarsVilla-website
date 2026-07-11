@@ -6,6 +6,8 @@ export const site = {
   name: "CarsVilla",
   tagline: "India's boutique for pre-owned cars",
   locale: "en-IN",
+  url: "https://carsvilla.in", // placeholder — set the real domain before launch
+
   phone: "+91 90000 00000",
   email: "hello@carsvilla.in",
   studio: "Vilarci",
