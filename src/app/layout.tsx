@@ -33,7 +33,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable}`}>
+    <html
+      lang="en-IN"
+      className={`${fraunces.variable} ${manrope.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <body className="grain min-h-screen antialiased">
         {/* Desktop chrome (≥1024px) */}
         <div className="hidden lg:contents">

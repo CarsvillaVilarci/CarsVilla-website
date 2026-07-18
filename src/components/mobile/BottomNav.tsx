@@ -2,19 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Car, Tag, MessageCircle, User } from "lucide-react";
+import { Home, Car, Tag, MessageCircle, LayoutGrid } from "lucide-react";
 
 const tabs = [
   { href: "/", label: "Home", icon: Home },
   { href: "/buy", label: "Buy", icon: Car },
   { href: "/sell", label: "Sell", icon: Tag },
   { href: "/contact", label: "Enquiry", icon: MessageCircle },
-  { href: "/login", label: "Account", icon: User },
+  // "More" is the hub tab: every page (and future feature) hangs off /more.
+  { href: "/more", label: "More", icon: LayoutGrid },
 ];
 
 /** Fixed native-app tab bar — all tabs weighted equally. */
 export function BottomNav() {
-  const pathname = usePathname();
+  // Normalise the exported trailing slash so "/buy/" matches "/buy",
+  // and highlight parent tabs on subpages ("/buy/some-car" → Buy).
+  const pathname = usePathname().replace(/\/+$/, "") || "/";
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav
@@ -24,7 +29,7 @@ export function BottomNav() {
     >
       <ul className="mx-auto flex max-w-md items-stretch justify-around px-2 py-2">
         {tabs.map((tab) => {
-          const active = pathname === tab.href;
+          const active = isActive(tab.href);
           return (
             <li key={tab.href} className="flex-1">
               <Link

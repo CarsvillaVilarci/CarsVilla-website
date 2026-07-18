@@ -77,10 +77,13 @@ export function ProfileDashboard() {
           <p className="mt-1 text-xs text-muted">Member since {user.since}</p>
         </div>
         <div className="flex gap-2">
-          <button className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-ink hover:border-wine/40">
+          <button
+            onClick={() => setTab("settings")}
+            className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-ink hover:border-wine/40"
+          >
             <Pencil size={15} /> Edit
           </button>
-          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-wine hover:border-wine/40">
+          <Link href="/login" className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-wine hover:border-wine/40">
             <LogOut size={15} /> Log out
           </Link>
         </div>
