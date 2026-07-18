@@ -1,5 +1,5 @@
 /**
- * Placeholder inventory + brands for the demo home page.
+ * Placeholder inventory + brands for the demo home page. ..
  * Replaced by the Supabase-backed catalogue in a later phase.
  * `href` on each brand deep-links to /buy pre-filtered (works once /buy lands).
  */
