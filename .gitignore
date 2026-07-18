@@ -56,10 +56,9 @@ aws.json
 .npmrc
 .netrc
 
-# Supabase (local stack, generated keys, temp)
-/supabase/.branches
-/supabase/.temp
-supabase/.env
+# Supabase — entire folder stays local (public repo; schema/RLS details are
+# applied remotely via migrations and documented in supabase/SCHEMA.md)
+/supabase/
 
 # ---------------------------------------------------------------------------
 # Logs & debug

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BadgeIndianRupee, CalendarCheck, RotateCcw } from "lucide-react";
 import { brands, fuels, transmissions, formatINR } from "@/lib/demo";
+import { submitSellRequest } from "@/lib/leads";
+import { site } from "@/lib/site";
 
 type Fields = {
   brand: string;
@@ -64,8 +66,36 @@ export function SellFlow() {
   const [step, setStep] = useState(0);
   const [f, setF] = useState<Fields>(EMPTY);
   const [quote, setQuote] = useState<{ low: number; high: number } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const mountedAt = useRef(0);
+
+  useEffect(() => {
+    mountedAt.current = Date.now();
+  }, []);
 
   const set = (k: keyof Fields, v: string) => setF((prev) => ({ ...prev, [k]: v }));
+
+  async function getPrice() {
+    if (!canNext || saving) return;
+    const q = valuate(f);
+    // An instant three-step run is a bot — show the quote, skip the save.
+    if (Date.now() - mountedAt.current < 3000) {
+      setQuote(q);
+      return;
+    }
+    setSaving(true);
+    const { ok } = await submitSellRequest({
+      ...f,
+      quoteLow: q.low,
+      quoteHigh: q.high,
+      website: "",
+    });
+    // The quote is client-computed: never let a failed save block it.
+    setSaveFailed(!ok);
+    setSaving(false);
+    setQuote(q);
+  }
 
   const canNext =
     step === 0
@@ -86,8 +116,17 @@ export function SellFlow() {
         </p>
         <p className="mt-4 max-w-md text-sm text-muted">
           This is an instant estimate. Book a free 60-minute doorstep inspection to lock your exact
-          price and get paid on the spot. <span className="text-ink">(Demo — no data is stored yet.)</span>
+          price and get paid on the spot.
         </p>
+        {saveFailed && (
+          <p className="mt-3 max-w-md text-sm text-wine">
+            We couldn&apos;t save your request just now — book below anyway, or call us at{" "}
+            <a href={`tel:${site.phone.replace(/\s/g, "")}`} className="font-semibold underline underline-offset-4">
+              {site.phone}
+            </a>{" "}
+            and quote this estimate.
+          </p>
+        )}
 
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
@@ -101,6 +140,8 @@ export function SellFlow() {
               setQuote(null);
               setStep(0);
               setF(EMPTY);
+              setSaveFailed(false);
+              mountedAt.current = Date.now();
             }}
             className="inline-flex items-center gap-2 rounded-full border border-line px-6 py-3.5 text-sm font-semibold text-ink hover:border-wine/40"
           >
@@ -228,11 +269,11 @@ export function SellFlow() {
           </button>
         ) : (
           <button
-            onClick={() => canNext && setQuote(valuate(f))}
-            disabled={!canNext}
+            onClick={getPrice}
+            disabled={!canNext || saving}
             className="inline-flex items-center gap-2 rounded-full bg-wine px-6 py-3 text-sm font-semibold text-cream transition-colors hover:bg-wine-hot disabled:opacity-40"
           >
-            Get my price <BadgeIndianRupee size={16} />
+            {saving ? "Getting your price…" : "Get my price"} <BadgeIndianRupee size={16} />
           </button>
         )}
       </div>

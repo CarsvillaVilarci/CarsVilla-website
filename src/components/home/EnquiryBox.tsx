@@ -1,14 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, PhoneCall } from "lucide-react";
 import { site } from "@/lib/site";
+import { submitEnquiry } from "@/lib/leads";
 
 const intents = ["Buy a car", "Sell my car", "Book a service", "Something else"];
 
+/** ?intent= deep-link values (e.g. /contact?intent=sell from the sell flow). */
+const INTENT_PARAM: Record<string, string> = {
+  buy: "Buy a car",
+  sell: "Sell my car",
+  service: "Book a service",
+  other: "Something else",
+};
+
+type Status = "idle" | "sending" | "sent" | "error";
+
 export function EnquiryBox() {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
   const [intent, setIntent] = useState(intents[0]);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot — humans never see it
+  const mountedAt = useRef(0);
+
+  useEffect(() => {
+    mountedAt.current = Date.now();
+    const param = new URLSearchParams(window.location.search).get("intent");
+    const label = param && INTENT_PARAM[param];
+    if (label) {
+      const id = setTimeout(() => setIntent(label), 0);
+      return () => clearTimeout(id);
+    }
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (status === "sending") return;
+    // Bot heuristics: filled honeypot or an instant submit → pretend success.
+    if (website !== "" || Date.now() - mountedAt.current < 3000) {
+      setStatus("sent");
+      return;
+    }
+    setStatus("sending");
+    const { ok } = await submitEnquiry({ name, phone, intentLabel: intent, message, website });
+    setStatus(ok ? "sent" : "error");
+  }
+
+  function reset() {
+    setStatus("idle");
+    setName("");
+    setPhone("");
+    setMessage("");
+    mountedAt.current = Date.now();
+  }
 
   return (
     <section className="container-x py-20">
@@ -35,35 +82,44 @@ export function EnquiryBox() {
 
         {/* Right — form */}
         <div className="p-9 md:p-11">
-          {sent ? (
+          {status === "sent" ? (
             <div className="flex h-full min-h-[18rem] flex-col items-center justify-center text-center">
               <CheckCircle2 size={44} className="text-emerald-600" strokeWidth={1.5} />
               <h3 className="mt-4 font-display text-2xl text-ink">Enquiry received</h3>
               <p className="mt-2 max-w-sm text-muted">
-                Thanks — a CarsVilla advisor will reach out shortly. (Demo form:
-                nothing is stored yet.)
+                Thanks — a CarsVilla advisor will reach out shortly.
               </p>
               <button
-                onClick={() => setSent(false)}
+                onClick={reset}
                 className="mt-6 text-sm font-semibold text-wine underline-offset-4 hover:underline"
               >
                 Send another
               </button>
             </div>
           ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSent(true);
-              }}
-              className="grid gap-5"
-            >
+            <form onSubmit={handleSubmit} className="grid gap-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Full name">
-                  <input required type="text" placeholder="Aarav Sharma" className={inputCls} />
+                  <input
+                    required
+                    type="text"
+                    minLength={2}
+                    maxLength={80}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Aarav Sharma"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Phone">
-                  <input required type="tel" placeholder="+91 90000 00000" className={inputCls} />
+                  <input
+                    required
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 90000 00000"
+                    className={inputCls}
+                  />
                 </Field>
               </div>
 
@@ -89,17 +145,46 @@ export function EnquiryBox() {
               <Field label="Message (optional)">
                 <textarea
                   rows={3}
+                  maxLength={1000}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   placeholder="Tell us the car, budget or anything else…"
                   className={`${inputCls} resize-none`}
                 />
               </Field>
 
+              {/* Honeypot — hidden from humans, bots fill it and get rejected. */}
+              <input
+                type="text"
+                name="website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="hidden"
+              />
+
+              {status === "error" && (
+                <p className="text-sm text-wine">
+                  Couldn&apos;t send your enquiry right now — please try again, or call
+                  us directly at{" "}
+                  <a href={`tel:${site.phone.replace(/\s/g, "")}`} className="font-semibold underline underline-offset-4">
+                    {site.phone}
+                  </a>
+                  .
+                </p>
+              )}
+
               <button
                 type="submit"
-                className="group mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-wine px-6 py-3.5 text-sm font-semibold text-cream transition-all hover:bg-wine-hot hover:shadow-luxe"
+                disabled={status === "sending"}
+                className="group mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-wine px-6 py-3.5 text-sm font-semibold text-cream transition-all hover:bg-wine-hot hover:shadow-luxe disabled:opacity-40"
               >
-                Send enquiry
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                {status === "sending" ? "Sending…" : "Send enquiry"}
+                {status !== "sending" && (
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                )}
               </button>
             </form>
           )}
