@@ -6,7 +6,10 @@ export const site = {
   name: "CarsVilla",
   tagline: "India's boutique for pre-owned cars",
   locale: "en-IN",
-  url: "https://carsvilla.in", // placeholder — set the real domain before launch
+  // Canonical origin for sitemap/robots/OG. Override per-environment with
+  // NEXT_PUBLIC_SITE_URL (inlined at build time); defaults to the live domain.
+  // No trailing slash — sitemap entries append their own path.
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://carsvilla.org").replace(/\/$/, ""),
 
   phone: "+91 90000 00000",
   email: "hello@carsvilla.in",
