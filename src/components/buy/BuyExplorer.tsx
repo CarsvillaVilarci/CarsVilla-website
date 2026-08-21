@@ -4,14 +4,14 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { Car, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import {
-  allCars,
   bodyTypes,
   fuels,
   transmissions,
   makeSlug,
-  priceBounds,
+  priceBoundsOf,
   formatINR,
-} from "@/lib/demo";
+  type Car as CarType,
+} from "@/lib/cars";
 import { CarCard } from "@/components/ui/CarCard";
 
 const SORTS = [
@@ -22,10 +22,11 @@ const SORTS = [
   { value: "km-asc", label: "Km: lowest first" },
 ];
 
-const makes = Array.from(new Set(allCars.map((c) => c.make)));
-
-export function BuyExplorer() {
+/** `cars` is the live Supabase inventory, fetched at build time by /buy. */
+export function BuyExplorer({ cars }: { cars: CarType[] }) {
   const params = useSearchParams();
+  const makes = useMemo(() => Array.from(new Set(cars.map((c) => c.make))), [cars]);
+  const priceBounds = useMemo(() => priceBoundsOf(cars), [cars]);
   const [q, setQ] = useState(params.get("q") ?? "");
   const [brand, setBrand] = useState(params.get("brand") ?? "all");
   const [body, setBody] = useState("all");
@@ -36,7 +37,7 @@ export function BuyExplorer() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const results = useMemo(() => {
-    const list = allCars.filter((c) => {
+    const list = cars.filter((c) => {
       if (q && !`${c.make} ${c.model} ${c.variant}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (brand !== "all" && makeSlug(c.make) !== brand) return false;
       if (body !== "all" && c.body !== body) return false;
@@ -51,7 +52,7 @@ export function BuyExplorer() {
     else if (sort === "year-desc") sorted.sort((a, b) => b.year - a.year);
     else if (sort === "km-asc") sorted.sort((a, b) => a.km - b.km);
     return sorted;
-  }, [q, brand, body, fuel, transmission, maxPrice, sort]);
+  }, [cars, q, brand, body, fuel, transmission, maxPrice, sort]);
 
   const activeCount =
     (brand !== "all" ? 1 : 0) +

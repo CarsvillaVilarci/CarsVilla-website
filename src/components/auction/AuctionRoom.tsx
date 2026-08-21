@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Clock, Gavel, ShieldCheck, Users } from "lucide-react";
-import { carSpecs, formatINR, type Car } from "@/lib/demo";
+import { carSpecs, formatINR, type Car } from "@/lib/cars";
 import { supabase } from "@/lib/supabase";
 
 type Auction = {

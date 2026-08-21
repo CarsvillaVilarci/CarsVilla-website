@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { allCars, getCar } from "@/lib/demo";
+import { getCarBySlug, getCars } from "@/lib/catalogue";
 import { AuctionRoom } from "@/components/auction/AuctionRoom";
 
-export function generateStaticParams() {
-  return allCars.map((c) => ({ slug: c.slug }));
+export async function generateStaticParams() {
+  return (await getCars()).map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -13,7 +13,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const car = getCar(slug);
+  const car = await getCarBySlug(slug);
   if (!car) return { title: "Auction" };
   const title = `${car.year} ${car.make} ${car.model} — live auction`;
   return {
@@ -28,7 +28,7 @@ export default async function AuctionCarPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const car = getCar(slug);
+  const car = await getCarBySlug(slug);
   if (!car) notFound();
   return <AuctionRoom car={car} />;
 }

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { featuredCars } from "@/lib/demo";
+import type { Car } from "@/lib/cars";
 import { CarCard } from "@/components/ui/CarCard";
 import { Reveal } from "@/components/ui/Reveal";
 
-export function BuyShowcase() {
+export function BuyShowcase({ cars }: { cars: Car[] }) {
   return (
     <section className="container-x py-12">
       <Reveal className="mb-9 flex items-end justify-between gap-6">
@@ -22,7 +22,7 @@ export function BuyShowcase() {
       </Reveal>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {featuredCars.map((car, i) => (
+        {cars.map((car, i) => (
           <Reveal key={car.slug} delay={i * 70}>
             <CarCard car={car} />
           </Reveal>

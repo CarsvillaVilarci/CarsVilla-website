@@ -14,7 +14,7 @@ import {
   Phone,
   Tag,
 } from "lucide-react";
-import { allCars, formatINR } from "@/lib/demo";
+import { formatINR, type Car } from "@/lib/cars";
 import { CarCard } from "@/components/ui/CarCard";
 
 const user = {
@@ -25,7 +25,7 @@ const user = {
   city: "Tamluk",
 };
 
-const saved = [allCars[0], allCars[3], allCars[8]];
+
 
 type Status = "Live" | "Under review" | "Sold";
 const listings: { make: string; model: string; year: number; asking: number; status: Status; views: number; enquiries: number; tint: string }[] = [
@@ -57,7 +57,14 @@ const badgeTone = (s: Status | EnqStatus) =>
       ? "bg-cream-2 text-muted"
       : "bg-amber-50 text-amber-700";
 
-export function ProfileDashboard() {
+/**
+ * Account dashboard. Auth is still a stub, so the *user* here is mock — but the
+ * saved-car cards render REAL inventory passed in from the page. Wire the rest
+ * once buyer auth + a saved_cars table land.
+ */
+export function ProfileDashboard({ cars }: { cars: Car[] }) {
+  const saved = cars.slice(0, 3);
+
   const [tab, setTab] = useState<TabKey>("saved");
 
   return (

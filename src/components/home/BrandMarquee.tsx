@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { brands, brandHref } from "@/lib/demo";
+import { brandHref, type Brand } from "@/lib/cars";
 
 /**
  * Infinite horizontal brand scroller. Each brand deep-links to /buy pre-filtered
  * (e.g. clicking Toyota → /buy?brand=toyota). Pure-CSS marquee, pauses on hover.
  */
-export function BrandMarquee() {
+export function BrandMarquee({ brands }: { brands: Brand[] }) {
   const loop = [...brands, ...brands];
 
   return (

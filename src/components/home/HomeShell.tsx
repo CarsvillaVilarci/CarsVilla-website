@@ -2,6 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import type { Acquired, Brand, Car } from "@/lib/cars";
+
+/** Live catalogue slices, fetched at build time by app/page.tsx. */
+export type HomeData = {
+  featured: Car[];
+  brands: Brand[];
+  acquisitions: Acquired[];
+};
 
 /**
  * Device-split home. Detects the viewport once on the client and dynamically
@@ -21,7 +29,7 @@ const MobileHome = dynamic(() => import("@/components/mobile/MobileHome"), {
   loading: () => <HomeFallback />,
 });
 
-export function HomeShell() {
+export function HomeShell(data: HomeData) {
   const [device, setDevice] = useState<"desktop" | "mobile" | null>(null);
 
   useEffect(() => {
@@ -33,7 +41,7 @@ export function HomeShell() {
   }, []);
 
   if (device === null) return <HomeFallback />;
-  return device === "desktop" ? <DesktopHome /> : <MobileHome />;
+  return device === "desktop" ? <DesktopHome {...data} /> : <MobileHome {...data} />;
 }
 
 /** Lightweight, always-available hero used for first paint + SEO baseline. */

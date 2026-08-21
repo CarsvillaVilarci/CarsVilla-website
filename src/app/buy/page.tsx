@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { BuyExplorer } from "@/components/buy/BuyExplorer";
+import { getCars } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
   title: "Buy Used Cars in Tamluk",
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
     "Browse certified pre-owned cars at CarsVilla, Tamluk. Filter by brand, body type, fuel, transmission and budget — every car inspected and best-price guaranteed.",
 };
 
-export default function BuyPage() {
+export default async function BuyPage() {
+  const cars = await getCars();
+
   return (
     <>
       <PageHeader
@@ -22,7 +25,7 @@ export default function BuyPage() {
       <Suspense
         fallback={<div className="container-x py-20 text-center text-muted">Loading inventory…</div>}
       >
-        <BuyExplorer />
+        <BuyExplorer cars={cars} />
       </Suspense>
     </>
   );

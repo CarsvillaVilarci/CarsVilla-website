@@ -12,13 +12,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { media } from "@/lib/site";
-import {
-  brands,
-  brandHref,
-  featuredCars,
-  recentlyBought,
-  formatINR,
-} from "@/lib/demo";
+import { brandHref, formatINR } from "@/lib/cars";
+import type { HomeData } from "@/components/home/HomeShell";
 import { CarCard } from "@/components/ui/CarCard";
 
 const quickActions = [
@@ -36,7 +31,7 @@ const reasons = [
 ];
 
 /** App-style mobile home — only loaded on small screens (see HomeShell). */
-export default function MobileHome() {
+export default function MobileHome({ featured, brands, acquisitions }: HomeData) {
   const hasVideo = Boolean(media.heroVideo);
 
   return (
@@ -124,7 +119,7 @@ export default function MobileHome() {
       <section className="pt-7">
         <SectionHead title="Cars to buy" href="/buy" />
         <div className="flex snap-x gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {featuredCars.map((car) => (
+          {featured.map((car) => (
             <div key={car.slug} className="w-[248px] shrink-0 snap-start">
               <CarCard car={car} />
             </div>
@@ -136,7 +131,7 @@ export default function MobileHome() {
       <section className="mt-7 bg-cream-2/70 py-7">
         <SectionHead title="Recently bought by us" />
         <div className="flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {recentlyBought.map((car, i) => (
+          {acquisitions.map((car, i) => (
             <article
               key={`${car.model}-${i}`}
               className="w-[220px] shrink-0 rounded-2xl border border-line bg-paper p-4 shadow-soft"

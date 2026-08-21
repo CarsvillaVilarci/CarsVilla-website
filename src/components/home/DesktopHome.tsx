@@ -5,16 +5,17 @@ import { BuyShowcase } from "@/components/home/BuyShowcase";
 import { RecentlyBought } from "@/components/home/RecentlyBought";
 import { WhyCarsVilla } from "@/components/home/WhyCarsVilla";
 import { EnquiryBox } from "@/components/home/EnquiryBox";
+import type { HomeData } from "@/components/home/HomeShell";
 
 /** Full desktop home — only loaded on large screens (see HomeShell). */
-export default function DesktopHome() {
+export default function DesktopHome({ featured, brands, acquisitions }: HomeData) {
   return (
     <>
       <Hero />
-      <BrandMarquee />
+      <BrandMarquee brands={brands} />
       <PremiumPanels />
-      <BuyShowcase />
-      <RecentlyBought />
+      <BuyShowcase cars={featured} />
+      <RecentlyBought items={acquisitions} />
       <WhyCarsVilla />
       <EnquiryBox />
     </>

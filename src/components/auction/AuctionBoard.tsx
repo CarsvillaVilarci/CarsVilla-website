@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Clock, Gavel, Users } from "lucide-react";
-import { formatINR } from "@/lib/demo";
+import { formatINR } from "@/lib/cars";
 import { supabase } from "@/lib/supabase";
 
 type BoardCar = {

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BadgeIndianRupee, CalendarCheck, RotateCcw } from "lucide-react";
-import { brands, fuels, transmissions, formatINR } from "@/lib/demo";
+import { sellBrands, fuels, transmissions, formatINR } from "@/lib/cars";
 import { submitSellRequest } from "@/lib/leads";
 import { site } from "@/lib/site";
 
@@ -178,8 +178,8 @@ export function SellFlow() {
           <Row>
             <Field label="Brand">
               <Select value={f.brand} onChange={(v) => set("brand", v)} placeholder="Select brand">
-                {brands.map((b) => (
-                  <option key={b.slug} value={b.name}>{b.name}</option>
+                {sellBrands.map((b) => (
+                  <option key={b} value={b}>{b}</option>
                 ))}
               </Select>
             </Field>

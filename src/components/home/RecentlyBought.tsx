@@ -1,8 +1,8 @@
 import { CheckCircle2 } from "lucide-react";
-import { recentlyBought, formatINR } from "@/lib/demo";
+import { formatINR, type Acquired } from "@/lib/cars";
 import { Reveal } from "@/components/ui/Reveal";
 
-export function RecentlyBought() {
+export function RecentlyBought({ items }: { items: Acquired[] }) {
   return (
     <section className="my-12 bg-cream-2/70 py-16">
       <div className="container-x">
@@ -18,7 +18,7 @@ export function RecentlyBought() {
         </Reveal>
 
         <div className="-mx-2 flex snap-x gap-4 overflow-x-auto px-2 pb-4">
-          {recentlyBought.map((car, i) => (
+          {items.map((car, i) => (
             <Reveal
               key={`${car.model}-${i}`}
               delay={i * 60}

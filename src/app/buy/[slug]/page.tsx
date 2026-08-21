@@ -14,19 +14,18 @@ import {
   Check,
 } from "lucide-react";
 import {
-  allCars,
-  getCar,
   similarCars,
   carSpecs,
   estimateEmi,
   formatINR,
   kmFormat,
-} from "@/lib/demo";
+} from "@/lib/cars";
+import { getCarBySlug, getCars } from "@/lib/catalogue";
 import { site } from "@/lib/site";
 import { CarCard } from "@/components/ui/CarCard";
 
-export function generateStaticParams() {
-  return allCars.map((c) => ({ slug: c.slug }));
+export async function generateStaticParams() {
+  return (await getCars()).map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({
@@ -35,7 +34,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const car = getCar(slug);
+  const car = await getCarBySlug(slug);
   if (!car) return { title: "Car not found" };
   const title = `${car.year} ${car.make} ${car.model} ${car.variant}`;
   return {
@@ -59,12 +58,13 @@ export default async function CarDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const car = getCar(slug);
+  const cars = await getCars();
+  const car = cars.find((c) => c.slug === slug);
   if (!car) notFound();
 
   const specs = carSpecs(car);
   const emi = estimateEmi(car.price);
-  const similar = similarCars(car);
+  const similar = similarCars(car, cars);
 
   const jsonLd = {
     "@context": "https://schema.org",

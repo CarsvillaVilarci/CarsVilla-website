@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, Fuel, Gauge, MapPin, Settings2 } from "lucide-react";
-import { formatINR, kmFormat, type Car } from "@/lib/demo";
+import { formatINR, kmFormat, type Car } from "@/lib/cars";
 
 export function CarCard({ car }: { car: Car }) {
   return (
